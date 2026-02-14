@@ -1,0 +1,52 @@
+name: medrpha_new
+description: "A new Flutter project."
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  get: ^4.6.6
+  google_fonts: ^6.2.1
+  image_picker: ^1.2.1
+  permission_handler: ^11.0.1
+  fluttertoast: ^8.2.2
+  shared_preferences: ^2.2.2
+  file_picker: ^10.3.10
+  country_picker: ^2.0.27
+  dropdown_search: ^6.0.2
+  country_state_city: ^0.1.6
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
+
+# General Flutter configuration
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+# TODO: The flutter_launcher_icons configuration was temporarily disabled to resolve a pubspec parsing error.
+# It can be re-enabled here once the project is stable.
+#
+# flutter_launcher_icons:
+#  android: true
+#  ios: true
+#  adaptive_icon_background: "#ffffff"
+#  adaptive_icon_foreground: "assets/icons/icon.png"
+#  image_path: "assets/icons/icon.png"
