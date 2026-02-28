@@ -1,41 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class UnverifiedUserModel {
+class InitialUserModel {
   final String phone;
   bool isCompleted;
 
-  UnverifiedUserModel({
+  InitialUserModel({
     required this.phone,
     this.isCompleted = false,
   });
 }
 
-class UnverifiedUserController extends GetxController {
+class InitialUserController extends GetxController {
   final TextEditingController searchController = TextEditingController();
 
   // Master list (Reactive)
-  final RxList<UnverifiedUserModel> _allUsers = <UnverifiedUserModel>[
-    UnverifiedUserModel(phone: "123-456-7890"),
-    UnverifiedUserModel(phone: "098-765-4321"),
-    UnverifiedUserModel(phone: "555-555-5555"),
-    UnverifiedUserModel(phone: "111-222-3333"),
-    UnverifiedUserModel(phone: "987-654-3210"),
-    UnverifiedUserModel(phone: "123-123-1234"),
-    UnverifiedUserModel(phone: "456-789-0123"),
-    UnverifiedUserModel(phone: "888-999-0000"),
-    UnverifiedUserModel(phone: "222-333-4444"),
-    UnverifiedUserModel(phone: "666-777-8888"),
-    UnverifiedUserModel(phone: "333-444-5555"),
-    UnverifiedUserModel(phone: "777-888-9999"),
-    UnverifiedUserModel(phone: "444-555-6666"),
-    UnverifiedUserModel(phone: "888-999-1111"),
-    UnverifiedUserModel(phone: "555-666-7777"),
+  final RxList<InitialUserModel> _allUsers = <InitialUserModel>[
+    InitialUserModel(phone: "123-456-7890"),
+    InitialUserModel(phone: "098-765-4321"),
+    InitialUserModel(phone: "555-555-5555"),
+    InitialUserModel(phone: "111-222-3333"),
+    InitialUserModel(phone: "987-654-3210"),
+    InitialUserModel(phone: "123-123-1234"),
+    InitialUserModel(phone: "456-789-0123"),
+    InitialUserModel(phone: "888-999-0000"),
+    InitialUserModel(phone: "222-333-4444"),
+    InitialUserModel(phone: "666-777-8888"),
+    InitialUserModel(phone: "333-444-5555"),
+    InitialUserModel(phone: "777-888-9999"),
+    InitialUserModel(phone: "444-555-6666"),
+    InitialUserModel(phone: "888-999-1111"),
+    InitialUserModel(phone: "555-666-7777"),
   ].obs;
 
   // Filtered list (UI me show hoga)
-  final RxList<UnverifiedUserModel> filteredUsers =
-      <UnverifiedUserModel>[].obs;
+  final RxList<InitialUserModel> filteredUsers =
+      <InitialUserModel>[].obs;
 
   @override
   void onInit() {
@@ -62,7 +62,7 @@ class UnverifiedUserController extends GetxController {
     }
   }
 
-  void completeRegistration(UnverifiedUserModel user) {
+  void completeRegistration(InitialUserModel user) {
     user.isCompleted = true;
 
     // Refresh main list so UI updates

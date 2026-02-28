@@ -12,13 +12,12 @@ class SplashController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     final bool? isLoggedIn = prefs.getBool('isLoggedIn');
 
-    // Wait for 3 seconds for the splash screen to be visible
     await Future.delayed(const Duration(seconds: 3));
 
     if (isLoggedIn == true) {
-      Get.offAllNamed('/home'); // Go to Home
+      Get.offAllNamed('/home');
     } else {
-      Get.offAllNamed('/login'); // Go to Login
+      Get.offAllNamed('/login');
     }
   }
 }

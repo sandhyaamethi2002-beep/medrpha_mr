@@ -1,15 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/unverified_user_controller.dart';
+import '../controllers/initial_user_controller.dart';
 import '../styles/color_styles.dart';
 import '../styles/text_styles.dart';
 import '../widgets/send_link_dialog.dart';
 
-class UnverifiedUserScreen extends StatelessWidget {
-  UnverifiedUserScreen({super.key});
+class InitialUserScreen extends StatelessWidget {
+  InitialUserScreen({super.key});
 
-  final UnverifiedUserController controller = Get.put(UnverifiedUserController());
+  final InitialUserController controller = Get.put(InitialUserController());
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class UnverifiedUserScreen extends StatelessWidget {
         backgroundColor: primaryColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: whiteColor),
-        title: Text("Unverified Users", style: titleStyle.copyWith(color: whiteColor)),
+        title: Text("Initial Users", style: titleStyle.copyWith(color: whiteColor)),
         centerTitle: true,
       ),
       body: Container(

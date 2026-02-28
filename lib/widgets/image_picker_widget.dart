@@ -14,7 +14,6 @@ class ImagePickerWidget extends StatelessWidget {
     return Center(
       child: Stack(
         children: [
-          // The main circle avatar
           CircleAvatar(
             radius: 60,
             backgroundColor: greyColor.withOpacity(0.1),
@@ -28,7 +27,6 @@ class ImagePickerWidget extends StatelessWidget {
                 : null,
           ),
 
-          // The edit button
           Positioned(
             bottom: 0,
             right: 0,

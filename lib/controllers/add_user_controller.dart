@@ -1,51 +1,118 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../AppManager/ViewModel/LoginVM/login_otp_vm.dart';
+import '../screens/otp_verify.dart';
 
 class AddUserController extends GetxController {
-  // --- Step Tracker ---
+
+  /// STEP TRACKER
   var currentStep = 0.obs;
   var isAgreed = false.obs;
   var isLoading = false.obs;
+  var isPhoneVerified = false.obs;
 
-  // --- STEP 1: Personal Details ---
+  final LoginOtpVM loginOtpVM = Get.put(LoginOtpVM());
+
+  /// STEP 1
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // --- STEP 2: Firm Details ---
+  /// STEP 2
   final firmNameController = TextEditingController();
-
-  // GST Section
   var hasGST = "Yes".obs;
   final gstNoController = TextEditingController();
-
-  // Drug Licence Section
   var hasDrugLicence = "Yes".obs;
   final drugLicenceNameController = TextEditingController();
   final drugLicenceNoController = TextEditingController();
   final dl1Controller = TextEditingController();
   final dl2Controller = TextEditingController();
   final validUptoController = TextEditingController();
-
-  // FSSAI Section
   var hasFSSAI = "Yes".obs;
   final fssaiNoController = TextEditingController();
   final fssaiImageController = TextEditingController();
 
-  // --- STEP 3: Address Details ---
+  /// STEP 3
   final countryController = TextEditingController();
   final stateController = TextEditingController();
   final cityController = TextEditingController();
   final pinCodeController = TextEditingController();
   final addressController = TextEditingController();
 
-  // --- STEP 4: Other Details ---
+  /// STEP 4
   final contactPersonNameController = TextEditingController();
   final contactNumberController = TextEditingController();
   final alternateNumberController = TextEditingController();
 
+  /// ================================
+  /// ✅ FIXED OTP FUNCTION
+  /// ================================
+
+  Future<void> verifyPhoneNumber() async {
+
+    String phone = phoneController.text.trim();
+
+    if (phone.length != 10) {
+      Get.snackbar(
+        "Error",
+        "Enter valid 10 digit mobile number",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+
+      bool success = await loginOtpVM.sendOtp(phone);
+
+      isLoading.value = false;
+
+      if (success) {
+
+        /// OTP Screen Open
+        final result = await Get.to(() => OtpVerification(
+          mobileNumber: phone,
+          otp: loginOtpVM.otpResponse.value?.otp ?? "",
+        ));
+
+        /// If OTP Verified
+        if (result == true) {
+          isPhoneVerified.value = true;
+
+          Get.snackbar(
+            "Verified",
+            "Mobile number verified successfully",
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+        }
+
+      } else {
+        Get.snackbar(
+          "Error",
+          "OTP sending failed",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+
+    } catch (e) {
+      isLoading.value = false;
+
+      Get.snackbar(
+        "Error",
+        "Something went wrong",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// FILE PICKER
   Future<void> pickFile(TextEditingController controller) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -54,14 +121,22 @@ class AddUserController extends GetxController {
 
     if (result != null) {
       controller.text = result.files.single.name;
-
-      // Future API upload ke liye useful
-      print("Picked File Path: ${result.files.single.path}");
     }
   }
 
-  // --- Navigation Logic ---
+  /// STEP NAVIGATION
   void nextStep() {
+
+    if (currentStep.value == 0 && !isPhoneVerified.value) {
+      Get.snackbar(
+        "Action Required",
+        "Please verify mobile number first",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     if (currentStep.value < 3) {
       currentStep.value++;
     }
@@ -73,65 +148,59 @@ class AddUserController extends GetxController {
     }
   }
 
-  // --- Final Submission Logic ---
-  Future<void> submitRegistration() async {
-    // 1. Check if Terms are agreed
+  /// FINAL SUBMIT
+  void submitRegistration() {
+
     if (!isAgreed.value) {
-      Get.snackbar("Terms Required", "Please accept terms and conditions",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.9),
+      Get.snackbar(
+        "Terms Required",
+        "Please accept terms and conditions",
+        backgroundColor: Colors.orange,
         colorText: Colors.white,
-        margin: const EdgeInsets.all(15),
-        borderRadius: 10,
-        duration: const Duration(seconds: 3),
-        isDismissible: true,
-        forwardAnimationCurve: Curves.easeOutBack,
       );
       return;
     }
 
-    // 2. Start Loading
-    isLoading.value = true;
-
-    try {
-      print("Sending Data to Server...");
-      print("Name: ${nameController.text}");
-      print("Email: ${emailController.text}");
-
-
-      await Future.delayed(const Duration(seconds: 2));
-
-      Get.snackbar("Success", "Registration Completed Successfully!",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white);
-
-
-    } catch (e) {
-      Get.snackbar("Error", "Something went wrong. Please try again.",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white);
-    } finally {
-      isLoading.value = false;
-    }
+    Get.snackbar(
+      "Success",
+      "Registration Completed Successfully",
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
   }
 
+  /// Dispose Controllers
   @override
   void onClose() {
-    final allControllers = [
-      nameController, phoneController, emailController, passwordController,
-      firmNameController, gstNoController, drugLicenceNameController,
-      drugLicenceNoController, dl1Controller, dl2Controller,
-      validUptoController, fssaiNoController, fssaiImageController,
-      countryController, stateController, cityController,
-      pinCodeController, addressController, contactPersonNameController,
-      contactNumberController, alternateNumberController
+
+    final controllers = [
+      nameController,
+      phoneController,
+      emailController,
+      passwordController,
+      firmNameController,
+      gstNoController,
+      drugLicenceNameController,
+      drugLicenceNoController,
+      dl1Controller,
+      dl2Controller,
+      validUptoController,
+      fssaiNoController,
+      fssaiImageController,
+      countryController,
+      stateController,
+      cityController,
+      pinCodeController,
+      addressController,
+      contactPersonNameController,
+      contactNumberController,
+      alternateNumberController,
     ];
 
-    for (var controller in allControllers) {
-      controller.dispose();
+    for (var c in controllers) {
+      c.dispose();
     }
+
     super.onClose();
   }
 }

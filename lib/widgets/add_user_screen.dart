@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:medrpha_new/widgets/step_widgets.dart';
-
 import '../controllers/add_user_controller.dart';
 
 
@@ -115,7 +114,6 @@ class AddUserScreen extends StatelessWidget {
               // Validation Logic
               if (_formKey.currentState!.validate()) {
                 if (controller.currentStep.value == 3) {
-                  // Last step par checkbox check karein
                   if (!controller.isAgreed.value) {
                     Get.snackbar("Terms Required", "Please agree to Terms & Conditions",
                         backgroundColor: Colors.orange, colorText: Colors.white);

@@ -2,17 +2,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/drawer_menu_controller.dart';
-import '../controllers/logout_controller.dart';
-import '../screens/unverified_user_screen.dart';
-import '../screens/verified_user_screen.dart';
+import '../screens/initial_user_screen.dart';
+import '../screens/manage_user_screen.dart';
 import '../styles/color_styles.dart';
 import '../styles/text_styles.dart';
 import '../screens/profile_detail_screen.dart';
+import 'logout_button.dart';
 
 class AppDrawer extends StatelessWidget {
   AppDrawer({super.key});
 
-  final LogoutController logoutController = Get.put(LogoutController());
+
   final DrawerMenuController menuController = Get.put(DrawerMenuController());
 
   @override
@@ -20,7 +20,6 @@ class AppDrawer extends StatelessWidget {
     return Drawer(
       child: Column(
         children: [
-          // Updated Drawer Header
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 40),
@@ -66,10 +65,10 @@ class AppDrawer extends StatelessWidget {
                   leading: const Icon(CupertinoIcons.home, color: blackColor),
                   title: Text("MR Dashboard", style: buttonTextStyle),
                   onTap: () {
-                    Get.back(); // Close drawer
+                    Get.back();
                   },
                 ),
-                // This is now a reactive, expandable tile
+
                 Obx(() => ListTile(
                       leading: const Icon(CupertinoIcons.person_2_alt, color: blackColor),
                       title: Text("MR", style: buttonTextStyle),
@@ -85,13 +84,12 @@ class AppDrawer extends StatelessWidget {
                       },
                     )),
 
-                // This Column will only be visible when the menu is expanded
                 Obx(() {
                   if (!menuController.mrExpanded.value) {
-                    return const SizedBox.shrink(); // Hidden when not expanded
+                    return const SizedBox.shrink();
                   }
                   return Padding(
-                    padding: const EdgeInsets.only(left: 5.0), // Further increased indentation
+                    padding: const EdgeInsets.only(left: 5.0),
                     child: Column(
                       children: [
                         ListTile(
@@ -106,16 +104,16 @@ class AppDrawer extends StatelessWidget {
                         ListTile(
                           dense: true,
                           leading: const Icon(CupertinoIcons.check_mark_circled, size: 22, color: greyColor),
-                          title: Text("Unverified User", style: bodyStyle.copyWith(fontSize: 15)),
+                          title: Text("Initial User", style: bodyStyle.copyWith(fontSize: 15)),
                           onTap: () {
                             Get.back();
-                            Get.to(() => UnverifiedUserScreen());
+                            Get.to(() => InitialUserScreen());
                           },
                         ),
                         ListTile(
                           dense: true,
                           leading: const Icon(CupertinoIcons.person_crop_circle_badge_plus, size: 22, color: greyColor),
-                          title: Text("Verified User", style: bodyStyle.copyWith(fontSize: 15)),
+                          title: Text("Manage User", style: bodyStyle.copyWith(fontSize: 15)),
                           onTap: () {
                             Get.back();
                             Get.to(() => VerifiedUserScreen());
@@ -130,10 +128,17 @@ class AppDrawer extends StatelessWidget {
 
                 // Logout Button
                 ListTile(
-                  leading: const Icon(CupertinoIcons.power, color: Colors.red),
+                  leading: const Icon(CupertinoIcons.square_arrow_left, color: Colors.red),
                   title: Text("Logout", style: buttonTextStyle.copyWith(color: Colors.red)),
                   onTap: () {
-                    logoutController.logout();
+                    Get.back();
+
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return const LogoutDialog();
+                      },
+                    );
                   },
                 ),
               ],

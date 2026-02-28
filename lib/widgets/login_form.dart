@@ -60,15 +60,12 @@ class LoginForm extends StatelessWidget {
                 if (value == null || value.isEmpty) {
                   return 'Please enter your User Id';
                 }
-                // if (!GetUtils.isEmail(value)) {
-                //   return 'Please enter a valid User Id';
-                // }
                 return null;
               },
             ),
             const SizedBox(height: 20),
 
-            // ✅ Password field
+            //  Password field
             Obx(() => TextFormField(
               controller: controller.passwordController,
               obscureText: !controller.isPasswordVisible.value,
@@ -100,31 +97,15 @@ class LoginForm extends StatelessWidget {
                 return null;
               },
             )),
-            const SizedBox(height: 15),
+            const SizedBox(height: 40),
 
-            // ✅ Forgot Password
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    "Forgot Password?",
-                    style: bodyStyle.copyWith(
-                      color: primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 25),
-
-            // ✅ Login Button
-            SizedBox(
+            //  Login Button
+            Obx(() => SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: controller.login,
+                onPressed: controller.isLoading.value
+                    ? null
+                    : controller.login,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -134,7 +115,16 @@ class LoginForm extends StatelessWidget {
                   elevation: 5,
                   shadowColor: primaryColor.withOpacity(0.4),
                 ),
-                child: Text(
+                child: controller.isLoading.value
+                    ? const SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: whiteColor,
+                  ),
+                )
+                    : Text(
                   "Login",
                   style: buttonTextStyle.copyWith(
                     fontSize: 18,
@@ -142,7 +132,7 @@ class LoginForm extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
+            )),
           ],
         ),
       ),
