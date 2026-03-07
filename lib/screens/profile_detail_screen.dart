@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../screens/edit_profile_screen.dart';
 import '../styles/color_styles.dart';
 import '../styles/text_styles.dart';
 import '../widgets/profile_header.dart';
@@ -64,9 +63,6 @@ class ProfileDetailScreen extends StatelessWidget {
                     child: ProfileHeader(
                       name: controller.name.value,
                       role: controller.role.value,
-                      // onEdit: () {
-                      //   Get.to(() => EditProfileScreen());
-                      // },
                     ),
                   ),
                 ),
@@ -75,8 +71,8 @@ class ProfileDetailScreen extends StatelessWidget {
 
                 // ⭐ User Info Cards
                 ProfileInfoCard(
-                  label: "User Id",
-                  value: controller.userId.value,
+                  label: "MR Id",
+                  value: controller.mrId.value,
                 ),
                 const SizedBox(height: 20),
                 ProfileInfoCard(

@@ -5,8 +5,7 @@ import '../AppManager/ViewModel/LoginVM/login_otp_vm.dart';
 import '../screens/otp_verify.dart';
 
 class AddUserController extends GetxController {
-
-  /// STEP TRACKER
+  // --- States ---
   var currentStep = 0.obs;
   var isAgreed = false.obs;
   var isLoading = false.obs;
@@ -14,13 +13,13 @@ class AddUserController extends GetxController {
 
   final LoginOtpVM loginOtpVM = Get.put(LoginOtpVM());
 
-  /// STEP 1
+  // --- STEP 1: Personal Details ---
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  /// STEP 2
+  // --- STEP 2: Firm Details ---
   final firmNameController = TextEditingController();
   var hasGST = "Yes".obs;
   final gstNoController = TextEditingController();
@@ -34,106 +33,82 @@ class AddUserController extends GetxController {
   final fssaiNoController = TextEditingController();
   final fssaiImageController = TextEditingController();
 
-  /// STEP 3
+  // --- STEP 3: Address Details ---
   final countryController = TextEditingController();
   final stateController = TextEditingController();
   final cityController = TextEditingController();
   final pinCodeController = TextEditingController();
   final addressController = TextEditingController();
 
-  /// STEP 4
+  // --- STEP 4: Other Details ---
   final contactPersonNameController = TextEditingController();
   final contactNumberController = TextEditingController();
   final alternateNumberController = TextEditingController();
 
-  /// ================================
-  /// ✅ FIXED OTP FUNCTION
-  /// ================================
-
+  // --- ✅ FIXED Verification Method ---
   Future<void> verifyPhoneNumber() async {
-
     String phone = phoneController.text.trim();
 
     if (phone.length != 10) {
-      Get.snackbar(
-        "Error",
-        "Enter valid 10 digit mobile number",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      Get.snackbar("Error", "Please enter a valid 10 digit number",
+          backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
 
+    isLoading.value = true;
     try {
-      isLoading.value = true;
-
       bool success = await loginOtpVM.sendOtp(phone);
-
       isLoading.value = false;
 
       if (success) {
+        // API response se sirf OTP nikalna (baaki data ignore karna)
+        String? serverOtp = loginOtpVM.otpResponse.value?.otp;
 
-        /// OTP Screen Open
-        final result = await Get.to(() => OtpVerification(
-          mobileNumber: phone,
-          otp: loginOtpVM.otpResponse.value?.otp ?? "",
-        ));
+        if (serverOtp != null && serverOtp.isNotEmpty) {
+          // Agar OTP mila hai toh Verification Screen par bhejein
+          var result = await Get.to(() => OtpVerification(
+            mobileNumber: phone,
+            otp: serverOtp,
+          ));
 
-        /// If OTP Verified
-        if (result == true) {
-          isPhoneVerified.value = true;
-
-          Get.snackbar(
-            "Verified",
-            "Mobile number verified successfully",
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
+          if (result == true) {
+            isPhoneVerified.value = true;
+            Get.snackbar("Verified", "Mobile number verified successfully",
+                backgroundColor: Colors.green, colorText: Colors.white);
+          }
+        } else {
+          // Agar OTP nahi aaya (Already Registered case)
+          Get.snackbar("Notice", "Number already registered. Please login or use another number.",
+              backgroundColor: Colors.orange, colorText: Colors.white);
         }
-
       } else {
-        Get.snackbar(
-          "Error",
-          "OTP sending failed",
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        Get.snackbar("Error", "Failed to send OTP",
+            backgroundColor: Colors.red, colorText: Colors.white);
       }
-
     } catch (e) {
       isLoading.value = false;
-
-      Get.snackbar(
-        "Error",
-        "Something went wrong",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      Get.snackbar("Error", "Something went wrong",
+          backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
-  /// FILE PICKER
+  // --- File Picker ---
   Future<void> pickFile(TextEditingController controller) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
     );
-
     if (result != null) {
-      controller.text = result.files.single.name;
+      // Path store karein taaki API mein bhej sakein (Sirf name se upload nahi hoga)
+      controller.text = result.files.single.path ?? result.files.single.name;
     }
   }
 
-  /// STEP NAVIGATION
+  // --- Navigation ---
   void nextStep() {
-
     if (currentStep.value == 0 && !isPhoneVerified.value) {
-      Get.snackbar(
-        "Action Required",
-        "Please verify mobile number first",
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
+      Get.snackbar("Action Required", "Please verify your mobile number first",
+          backgroundColor: Colors.orange, colorText: Colors.white);
       return;
     }
 
@@ -148,59 +123,52 @@ class AddUserController extends GetxController {
     }
   }
 
-  /// FINAL SUBMIT
-  void submitRegistration() {
-
+  // --- Final Submit (Placeholder for Firm API) ---
+  Future<void> submitRegistration() async {
     if (!isAgreed.value) {
-      Get.snackbar(
-        "Terms Required",
-        "Please accept terms and conditions",
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
+      Get.snackbar("Terms Required", "Please accept terms and conditions",
+          backgroundColor: Colors.orange, colorText: Colors.white);
       return;
     }
 
-    Get.snackbar(
-      "Success",
-      "Registration Completed Successfully",
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-    );
+    isLoading.value = true;
+    try {
+      // Yahan aap apni Add Firm API ka call karenge
+      await Future.delayed(const Duration(seconds: 2));
+      Get.snackbar("Success", "Registration Completed Successfully!",
+          backgroundColor: Colors.green, colorText: Colors.white);
+    } catch (e) {
+      Get.snackbar("Error", "Registration failed",
+          backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
-  /// Dispose Controllers
   @override
   void onClose() {
-
-    final controllers = [
-      nameController,
-      phoneController,
-      emailController,
-      passwordController,
-      firmNameController,
-      gstNoController,
-      drugLicenceNameController,
-      drugLicenceNoController,
-      dl1Controller,
-      dl2Controller,
-      validUptoController,
-      fssaiNoController,
-      fssaiImageController,
-      countryController,
-      stateController,
-      cityController,
-      pinCodeController,
-      addressController,
-      contactPersonNameController,
-      contactNumberController,
-      alternateNumberController,
-    ];
-
-    for (var c in controllers) {
-      c.dispose();
-    }
-
+    // Memory leak se bachne ke liye controllers dispose karein
+    nameController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    firmNameController.dispose();
+    gstNoController.dispose();
+    drugLicenceNameController.dispose();
+    drugLicenceNoController.dispose();
+    dl1Controller.dispose();
+    dl2Controller.dispose();
+    validUptoController.dispose();
+    fssaiNoController.dispose();
+    fssaiImageController.dispose();
+    countryController.dispose();
+    stateController.dispose();
+    cityController.dispose();
+    pinCodeController.dispose();
+    addressController.dispose();
+    contactPersonNameController.dispose();
+    contactNumberController.dispose();
+    alternateNumberController.dispose();
     super.onClose();
   }
 }

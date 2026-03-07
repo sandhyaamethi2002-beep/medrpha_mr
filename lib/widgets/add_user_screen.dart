@@ -3,9 +3,6 @@ import 'package:get/get.dart';
 import 'package:medrpha_new/widgets/step_widgets.dart';
 import '../controllers/add_user_controller.dart';
 
-
-
-
 class AddUserScreen extends StatelessWidget {
   AddUserScreen({super.key});
 

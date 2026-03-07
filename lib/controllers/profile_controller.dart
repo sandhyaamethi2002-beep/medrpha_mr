@@ -2,11 +2,11 @@ import 'package:get/get.dart';
 
 class ProfileController extends GetxController {
   final name = "John Doe".obs;
-  final role = "Flutter Developer".obs;
-  final userId = "12345".obs;
-  final designation = "Senior Developer".obs;
+  final role = "SMR".obs;
+  final mrId = "12345".obs;
+  final designation = "Senior Medical Representative".obs;
   final phone = "+1 123 456 7890".obs;
-  final address = "123, Flutter Lane, Dart Ville".obs;
+  final address = "MEDRPHA Noida Sec-6 India".obs;
 
   void logout() {
     // Implement logout functionality

@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import 'AppManager/ViewModel/LoginVM/verify_login_otp_vm.dart';
+import 'Provider/cart_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
-
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -17,12 +18,18 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() {
-
   HttpOverrides.global = MyHttpOverrides();
 
   Get.put(VerifyLoginOtpVM());
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
