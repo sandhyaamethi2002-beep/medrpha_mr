@@ -7,11 +7,13 @@ class ProductModel {
   final String subtitle;
   final String company;
   final String image;
-  final String category;
+  final String categoryId;
   final String type;
   final double? mrp;
   final double? price;
   final double? discount;
+
+
 
   ProductModel({
     required this.id,
@@ -19,12 +21,14 @@ class ProductModel {
     required this.subtitle,
     required this.company,
     required this.image,
-    required this.category,
+    required this.categoryId,
     required this.type,
     this.mrp,
     this.price,
     this.discount,
   });
+
+
 }
 
 class ProductController extends GetxController {
@@ -50,7 +54,7 @@ class ProductController extends GetxController {
         subtitle: e.description ?? "",
         company: e.companyName ?? "Unknown",
         image: e.productImg ?? "",
-        category: e.categoryName ?? "",
+        categoryId: e.categoryName ?? "",
         type: e.productType ?? "",
         // VM ke ProductData se fields utha rahe hain
         mrp: e.mrp?.toDouble() ?? 0.0,
@@ -81,7 +85,7 @@ class ProductController extends GetxController {
         subtitle: e.description ?? "",
         company: e.companyName ?? "Unknown",
         image: e.productImg ?? "",
-        category: e.categoryName ?? "",
+        categoryId: e.categoryName ?? "",
         type: e.productType ?? "",
         mrp: e.mrp,
         price: e.finalCompanyPrice,

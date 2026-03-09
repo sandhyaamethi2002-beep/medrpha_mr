@@ -6,28 +6,39 @@ import '../../Models/CategoryM/getProductDetail_model.dart';
 
 class ProductDetailService {
 
-  Future<ProductDetailModel?> fetchProductDetails(String productId) async {
+  Future<ProductDetailModel?> fetchProductDetails(
+      String productId,
+      String categoryIds,
+      String adminId,
+      String userTypeId,
+      String areaId,
+      )  async {
     try {
 
-      final url = "https://mrnew.medrpha.com/api/MasterApi/GetProductDetails?pid=$productId&adminId=1&userTypeId=1&areaId=1";
+      final url =
+          "https://mrnew.medrpha.com/api/MasterApi/GetProductDetails?pid=$productId&categoryIds=$categoryIds&adminId=$adminId&userTypeId=$userTypeId&areaId=$areaId";
 
-      log("--- 🚀 FETCHING FULL DATA FOR ID: $productId ---");
+      log("---  FETCHING FULL DATA FOR ID: $productId ---");
 
       final response = await http.get(Uri.parse(url));
 
+      print(url);
+
+
       if (response.body.isNotEmpty) {
-        debugPrint("--- 📦 API FULL RESPONSE BODY ---");
+        debugPrint("--- API FULL RESPONSE BODY ---");
         debugPrint(response.body);
       }
+
 
       if (response.statusCode == 200) {
         return ProductDetailModel.fromJson(jsonDecode(response.body));
       } else {
-        log("--- ❌ FAILED: ${response.statusCode} ---");
+        log("---  FAILED: ${response.statusCode} ---");
         return null;
       }
     } catch (e) {
-      log("--- ❌ EXCEPTION: $e ---");
+      log("---  EXCEPTION: $e ---");
       return null;
     }
   }

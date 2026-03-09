@@ -105,10 +105,18 @@ class CategoryFilter extends StatelessWidget {
 
                     onSelected: (val) {
                       if (val) {
+
+                        /// set selected category id
+                        productVM.selectedCategoryId.value = (cat.catId ?? 0).toString();
+
+                        /// print selected category id
+                        print("Selected Category ID: ${productVM.selectedCategoryId.value}");
+
                         productVM.fetchProducts(
-                            (cat.catId ?? 0).toString(),
-                            categoryName: cat.categoryName ?? "All"
+                          productVM.selectedCategoryId.value,
+                          categoryName: cat.categoryName ?? "All",
                         );
+
                         Navigator.pop(context);
                       }
                     },

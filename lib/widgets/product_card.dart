@@ -77,12 +77,12 @@ class ProductCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               const Icon(Icons.bookmark_border, color: Colors.grey, size: 20),
-              const SizedBox(height: 25), // Space kam kiya chote card ke liye
+              const SizedBox(height: 25),
 
               quantity == 0
                   ? SizedBox(
-                height: 38, // Height halki si kam ki
-                width: 95,  // Width halki si kam ki
+                height: 38,
+                width: 95,
                 child: ElevatedButton(
                   onPressed: () => cart.addToCart(product),
                   style: ElevatedButton.styleFrom(

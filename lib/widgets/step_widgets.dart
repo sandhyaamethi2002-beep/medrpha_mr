@@ -25,7 +25,6 @@ class PersonalStep extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // ✅ 1️⃣ Phone Field (LOCK AFTER VERIFY)
             Expanded(
               flex: 2,
               child: Obx(() {

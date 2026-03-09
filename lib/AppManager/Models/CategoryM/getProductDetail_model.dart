@@ -15,12 +15,13 @@ class ProductDetailModel {
 
 class ProductData {
   int? pid;
+  String? categoryId;
   String? productName;
   String? productImg;
   String? description;
-  double? mrp;
+  int? mrp;
   double? finalCompanyPrice;
-  double? discountPercentage;
+  int? discountPercentage;
   String? companyName; // Yeh field add ki hai
 
   ProductData({
@@ -32,6 +33,7 @@ class ProductData {
     this.finalCompanyPrice,
     this.discountPercentage,
     this.companyName,
+    this.categoryId,
   });
 
   ProductData.fromJson(Map<String, dynamic> json) {
@@ -39,11 +41,10 @@ class ProductData {
     productName = json['product_name'];
     productImg = json['product_img'];
     description = json['description'];
-
     companyName = json['company_name'];
 
-    mrp = double.tryParse(json['mrp']?.toString() ?? "0") ?? 0.0;
+    mrp = int.tryParse(json['mrp']?.toString() ?? "0") ?? 0;
     finalCompanyPrice = double.tryParse(json['finalCompanyPrice']?.toString() ?? "0") ?? 0.0;
-    discountPercentage = double.tryParse(json['discountPercentage']?.toString() ?? "0") ?? 0.0;
+    discountPercentage = int.tryParse(json['discountPercentage']?.toString() ?? "0") ?? 0;
   }
 }

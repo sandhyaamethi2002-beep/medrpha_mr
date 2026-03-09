@@ -21,6 +21,7 @@ class ProductScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     /// FIRST LOAD
     if (productVM.productList.isEmpty) {
       productVM.fetchProducts("5", categoryName: "All");
@@ -28,6 +29,8 @@ class ProductScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+
+      /// APPBAR
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A5ED3),
         elevation: 0,
@@ -39,6 +42,7 @@ class ProductScreen extends StatelessWidget {
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
+
         actions: [
           Stack(
             alignment: Alignment.center,
@@ -47,6 +51,7 @@ class ProductScreen extends StatelessWidget {
                 icon: const Icon(Icons.shopping_cart_outlined, size: 26),
                 onPressed: () => Get.to(() => const CartScreen()),
               ),
+
               Positioned(
                 right: 5,
                 top: 5,
@@ -59,7 +64,10 @@ class ProductScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF1A5ED3), width: 1),
+                        border: Border.all(
+                          color: const Color(0xFF1A5ED3),
+                          width: 1,
+                        ),
                       ),
                       constraints: const BoxConstraints(
                         minWidth: 18,
@@ -83,13 +91,17 @@ class ProductScreen extends StatelessWidget {
           const SizedBox(width: 10)
         ],
       ),
+
+      /// BODY
       body: Column(
         children: [
+
           /// SEARCH BAR
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
+
                 Expanded(
                   child: TextField(
                     onChanged: (value) => productVM.searchProduct(value),
@@ -105,14 +117,19 @@ class ProductScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 const SizedBox(width: 10),
+
+                /// FILTER BUTTON
                 GestureDetector(
                   onTap: () {
+
                     showModalBottomSheet(
                       context: context,
                       backgroundColor: Colors.white,
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                        borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(25)),
                       ),
                       builder: (context) => CategoryFilter(
                         categoryVM: categoryVM,
@@ -133,10 +150,19 @@ class ProductScreen extends StatelessWidget {
             ),
           ),
 
+          /// SELECTED CATEGORY NAME
           Obx(() {
-            if (productVM.selectedCategoryName.value == "All") return const SizedBox();
+
+            print(
+                "Selected Category ID: ${productVM.selectedCategoryId.value}");
+
+            if (productVM.selectedCategoryName.value == "All") {
+              return const SizedBox();
+            }
+
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -154,41 +180,55 @@ class ProductScreen extends StatelessWidget {
           /// PRODUCT LIST
           Expanded(
             child: Obx(() {
+
               if (productVM.isLoading.value) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
               }
 
               if (productVM.filteredList.isEmpty) {
-                return const Center(child: Text("No Products Found"));
+                return const Center(
+                  child: Text("No Products Found"),
+                );
               }
 
               return ListView.builder(
                 itemCount: productVM.filteredList.length,
+
                 itemBuilder: (context, index) {
-                  // productVM.filteredList se direct data le rahe hain
+
                   final apiData = productVM.filteredList[index];
 
-                  // Mapping ProductData (API) to ProductModel (UI)
+                  /// API → UI MODEL
                   final uiProduct = ProductModel(
                     id: apiData.pid.toString(),
                     name: apiData.productName ?? "No Name",
                     subtitle: apiData.description ?? "No Description",
                     company: apiData.companyName ?? "Unknown Brand",
-                    // Agar image URL incomplete hai toh base URL yahan add karein
                     image: apiData.productImg ?? "",
-                    category: apiData.categoryName ?? "",
+                    categoryId: apiData.categoryName ?? "",
                     type: apiData.productType ?? "",
-                    // Agar aapne ProductModel mein niche ke fields add kiye hain:
-                    // mrp: apiData.mrp,
-                    // price: apiData.finalCompanyPrice,
-                    // discount: apiData.discountPercentage,
                   );
 
                   return InkWell(
+
                     onTap: () {
-                      // Ab sahi 'uiProduct' pass ho raha hai
-                      Get.to(() => ProductDetailScreen(product: uiProduct));
+                      print("Clicked Product ID: ${apiData.pid}");
+                      print("Category ID: ${productVM.selectedCategoryId.value}");
+                      print("Admin ID: ${apiData.adminid}");
+                      print("User ID: ${apiData.userId}");
+                      print("Area ID: ${apiData.areaId}");
+
+                      Get.to(() => ProductDetailScreen(
+                        product: uiProduct,
+                        categoryId: int.parse(productVM.selectedCategoryId.value),
+                        adminId: apiData.adminid ?? 0,
+                        userTypeId: apiData.userId ?? 0,
+                        areaId: apiData.areaId ?? 0,
+                      ));
                     },
+
                     child: ProductCard(product: uiProduct),
                   );
                 },
