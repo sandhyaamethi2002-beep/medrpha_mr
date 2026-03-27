@@ -1,44 +1,48 @@
 import 'dart:convert';
-import 'dart:developer';
-import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../../Models/CategoryM/getProductDetail_model.dart';
 
-class ProductDetailService {
+class ProductDetailsService {
+  Future<ProductDetailsModel?> fetchProductDetails({
+    required String categoryIds,
+    required int adminId,
+    required int userTypeId,
+    required int areaId,
+  }) async {
+    final Map<String, String> queryParameters = {
+      'categoryIds': categoryIds,
+      'adminId': adminId.toString(),
+      'userTypeId': userTypeId.toString(),
+      'areaId': areaId.toString(),
+    };
 
-  Future<ProductDetailModel?> fetchProductDetails(
-      String productId,
-      String categoryIds,
-      String adminId,
-      String userTypeId,
-      String areaId,
-      )  async {
+    final uri = Uri.https(
+        'mrnew.medrpha.com', '/api/MasterApi/GetProductDetails', queryParameters);
+
+    // --- URI PRINT ---
+    print('---------- API REQUEST ----------');
+    print('URL: $uri');
+    print('---------------------------------');
+
     try {
+      final response = await http.get(uri).timeout(const Duration(seconds: 15));
 
-      final url =
-          "https://mrnew.medrpha.com/api/MasterApi/GetProductDetails?pid=$productId&categoryIds=$categoryIds&adminId=$adminId&userTypeId=$userTypeId&areaId=$areaId";
-
-      log("---  FETCHING FULL DATA FOR ID: $productId ---");
-
-      final response = await http.get(Uri.parse(url));
-
-      print(url);
-
-
-      if (response.body.isNotEmpty) {
-        debugPrint("--- API FULL RESPONSE BODY ---");
-        debugPrint(response.body);
-      }
-
+      // --- RESPONSE BODY PRINT ---
+      print('---------- API RESPONSE ----------');
+      print('Status Code: ${response.statusCode}');
+      print('Body: ${response.body}');
+      print('----------------------------------');
 
       if (response.statusCode == 200) {
-        return ProductDetailModel.fromJson(jsonDecode(response.body));
-      } else {
-        log("---  FAILED: ${response.statusCode} ---");
-        return null;
+        final data = jsonDecode(response.body);
+        return ProductDetailsModel.fromJson(data);
       }
+      return null;
     } catch (e) {
-      log("---  EXCEPTION: $e ---");
+      print('---------- API ERROR ----------');
+      print('Error: $e');
+      print('-------------------------------');
       return null;
     }
   }

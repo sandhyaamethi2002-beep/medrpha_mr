@@ -2,38 +2,95 @@ import 'package:get/get.dart';
 import '../../Models/CategoryM/getProductDetail_model.dart';
 import '../../Services/CategoryS/getProductDetail_service.dart';
 
-class ProductDetailViewModel extends GetxController {
-  final ProductDetailService _service = ProductDetailService();
+class ProductDetailsViewModel extends GetxController {
   var isLoading = false.obs;
-  var productData = Rxn<ProductData>();
+  var productList = <ProductData>[].obs;
+  var allProducts = <ProductData>[].obs;
+  var selectedCategory = "All".obs;
 
-  Future<void> loadSingleProduct(
-      String productId,
-      String categoryIds,
-      String adminId,
-      String userTypeId,
-      String areaId,
-      ) async {
-    isLoading.value = true;
+  final ProductDetailsService _service = ProductDetailsService();
 
-    productData.value = null;
+  // MAPPING UPDATE: "All" ke liye saari IDs ka combination (1,2,3,4,5,6)
+  final Map<String, String> categoryIdsMap = {
+    "All": "1,2,3,4,5,6", // Sab categories ka data mangwane ke liye
+    "Ayurvedic": "5",
+    "Ethical": "1",
+    "General": "6",
+    "Generic": "2",
+    "Surgical": "3",
+    "Veterinary": "4",
+  };
 
-    final result = await _service.fetchProductDetails(productId, categoryIds, adminId, userTypeId, areaId);
+  @override
+  void onInit() {
+    super.onInit();
+    // Shuruat mein saara data mangwa rahe hain
+    filterByCategory("All");
+  }
 
-    if (result != null && result.data != null && result.data!.isNotEmpty) {
+  void getProductDetails({
+    String catId = '1,2,3,4,5,6',
+    int adminId = 1,
+    int userType = 1,
+    int areaId = 1
+  }) async {
+    try {
+      isLoading(true);
 
-      try {
-        final matchedItem = result.data!.firstWhere(
-              (item) => item.pid.toString() == productId.toString(),
-          orElse: () => result.data![0],
-        );
+      // Console mein URL check karein, ab categoryIds=1,2,3,4,5,6 jayega
+      var response = await _service.fetchProductDetails(
+        categoryIds: catId,
+        adminId: adminId,
+        userTypeId: userType,
+        areaId: areaId,
+      );
 
-        productData.value = matchedItem;
-      } catch (e) {
-        productData.value = result.data![0];
+      if (response != null && response.data != null) {
+        allProducts.assignAll(response.data!);
+        productList.assignAll(response.data!);
+      } else {
+        allProducts.clear();
+        productList.clear();
       }
+    } catch (e) {
+      print("API ERROR: $e");
+    } finally {
+      isLoading(false);
     }
+  }
 
-    isLoading.value = false;
+  // --- UPDATED SEARCH LOGIC WITH TRIM ---
+  void searchProduct(String query) {
+    // Trim se aage-piche ke faltu spaces hat jayenge
+    String cleanQuery = query.trim().toLowerCase();
+
+    if (cleanQuery.isEmpty) {
+      productList.assignAll(allProducts);
+    } else {
+      var filtered = allProducts.where((p) {
+        // Product name aur company name dono ko check kar rahe hain
+        String name = (p.productName ?? "").toLowerCase();
+        String company = (p.companyName ?? "").toLowerCase();
+
+        return name.contains(cleanQuery) || company.contains(cleanQuery);
+      }).toList();
+
+      productList.assignAll(filtered);
+    }
+  }
+
+  // FILTER LOGIC
+  void filterByCategory(String categoryName) {
+    selectedCategory.value = categoryName;
+
+    // Map se ID nikali (All ke liye ab "1,2,3,4,5,6" jayega)
+    String targetId = categoryIdsMap[categoryName] ?? "1,2,3,4,5,6";
+
+    print("---------------------------------");
+    print("CATEGORY: $categoryName | SENDING IDs: $targetId");
+    print("---------------------------------");
+
+    // Fresh API hit
+    getProductDetails(catId: targetId);
   }
 }

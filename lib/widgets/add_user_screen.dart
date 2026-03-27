@@ -4,10 +4,21 @@ import 'package:medrpha_new/widgets/step_widgets.dart';
 import '../controllers/add_user_controller.dart';
 
 class AddUserScreen extends StatelessWidget {
-  AddUserScreen({super.key});
-
+  final String? phoneNumber;
   final AddUserController controller = Get.put(AddUserController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  AddUserScreen({super.key, this.phoneNumber}) {
+    if (phoneNumber != null && phoneNumber!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.phoneController.text = phoneNumber!;
+        controller.isPhoneVerified.value = false;
+        controller.phoneController.selection = TextSelection.fromPosition(
+          TextPosition(offset: controller.phoneController.text.length),
+        );
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +26,8 @@ class AddUserScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Registration",
-            style: TextStyle(color: Colors.white,
+            style: TextStyle(
+                color: Colors.white,
                 fontWeight: FontWeight.w600,
                 fontSize: 20)),
         titleSpacing: 0,
@@ -23,7 +35,7 @@ class AddUserScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Get.back(),
         ),
-        backgroundColor: Color(0xFF1A5ED3),
+        backgroundColor: const Color(0xFF1A5ED3),
         centerTitle: false,
         elevation: 0,
       ),
@@ -35,10 +47,10 @@ class AddUserScreen extends StatelessWidget {
             child: Column(
               children: [
                 Row(
-                  children: List.generate(4, (index) =>
-                      _buildTab(
-                          index, ["Personal", "Firm", "Address", "Other"][index])
-                  ),
+                  children: List.generate(
+                      4,
+                          (index) => _buildTab(index,
+                          ["Personal", "Firm", "Address", "Other"][index])),
                 ),
                 const SizedBox(height: 30),
 
@@ -88,11 +100,13 @@ class AddUserScreen extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 2),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isActive ?  Color(0xFF1A5ED3) : Colors.grey.shade200,
+            color: isActive ? const Color(0xFF1A5ED3) : Colors.grey.shade200,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(title, textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 10,
+          child: Text(title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 10,
                   color: isActive ? Colors.white : Colors.black54,
                   fontWeight: FontWeight.bold)),
         ),
@@ -108,8 +122,9 @@ class AddUserScreen extends StatelessWidget {
         _navButton(
             controller.currentStep.value == 3 ? "Finish" : "Next",
                 () {
-              // Validation Logic
               if (_formKey.currentState!.validate()) {
+
+                // Final Step logic
                 if (controller.currentStep.value == 3) {
                   if (!controller.isAgreed.value) {
                     Get.snackbar("Terms Required", "Please agree to Terms & Conditions",
@@ -122,8 +137,7 @@ class AddUserScreen extends StatelessWidget {
                 }
               }
             },
-            isPrimary: true
-        ),
+            isPrimary: true),
       ],
     );
   }
@@ -138,15 +152,14 @@ class AddUserScreen extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isDisabled ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isDisabled ? Colors.grey.shade400 : Color(0xFF1A5ED3),
+          backgroundColor:
+          isDisabled ? Colors.grey.shade400 : const Color(0xFF1A5ED3),
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           elevation: isDisabled ? 0 : 2,
         ),
-        child: Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)
-        ),
+        child: Text(label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
       ),
     );
   }

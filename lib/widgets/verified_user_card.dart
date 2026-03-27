@@ -6,7 +6,9 @@ import '../styles/text_styles.dart';
 class VerifiedUserCard extends StatelessWidget {
   final String firmName;
   final String gstNo;
+  final String drugLicence;
   final String phoneNo;
+  final String? address;
   final String date;
   final bool isActive;
   final VoidCallback onViewDetails;
@@ -16,11 +18,13 @@ class VerifiedUserCard extends StatelessWidget {
     super.key,
     required this.firmName,
     required this.gstNo,
+    required this.drugLicence,
     required this.phoneNo,
     required this.date,
     required this.isActive,
     required this.onViewDetails,
     required this.onViewPrice,
+    this.address,
   });
 
   @override
@@ -42,16 +46,25 @@ class VerifiedUserCard extends StatelessWidget {
             // --- Header with Firm Name and View Button ---
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Firm Name", style: bodyStyle.copyWith(color: greyColor, fontSize: 13)),
-                    const SizedBox(height: 4),
-                    Text(firmName, style: titleStyle.copyWith(fontSize: 17, fontWeight: FontWeight.bold)),
-                  ],
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      //Text("${phoneNo}", style: bodyStyle.copyWith(color: greyColor, fontSize: 13)),
+                      const SizedBox(height: 4),
+                      Text(
+                        firmName,
+                        style: titleStyle.copyWith(fontSize: 17, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
+
+                const SizedBox(width: 10),
+
                 GestureDetector(
                   onTap: onViewDetails,
                   child: Container(
@@ -76,6 +89,8 @@ class VerifiedUserCard extends StatelessWidget {
             // --- Info Rows ---
             _buildInfoRow("GST No.", gstNo),
             const SizedBox(height: 12),
+            _buildInfoRow("Drug Licence", drugLicence),
+            const SizedBox(height: 12),
             _buildInfoRow("Phone No.", phoneNo),
             const SizedBox(height: 12),
             _buildInfoRow("Date", date),
@@ -84,7 +99,7 @@ class VerifiedUserCard extends StatelessWidget {
             // --- Footer with Status and View Price Button ---
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center, // Corrected: Use crossAxisAlignment
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Row(
                   children: [

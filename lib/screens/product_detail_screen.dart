@@ -1,64 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import '../AppManager/ViewModel/CategoryVM/getProductDetail_vm.dart';
-import '../controllers/product_controller.dart';
+import '../AppManager/Models/CategoryM/getProductDetail_model.dart';
 import '../Provider/cart_provider.dart';
 
-class ProductDetailScreen extends StatefulWidget {
-  final ProductModel product;
-  final int categoryId;
-  final int adminId;
-  final int userTypeId;
-  final int areaId;
+class ProductDetailScreen extends StatelessWidget {
+  final ProductData product;
+  final int firmId; // dynamic firmId
+  final int userId; // dynamic userId
 
   const ProductDetailScreen({
     super.key,
     required this.product,
-    required this.categoryId,
-    required this.adminId,
-    required this.userTypeId,
-    required this.areaId,
+    required this.firmId,
+    required this.userId,
   });
 
   @override
-  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
-}
-
-class _ProductDetailScreenState extends State<ProductDetailScreen> {
-
-  late ProductDetailViewModel vm;
-
-  @override
-  void initState() {
-    super.initState();
-
-    /// Controller create with unique tag
-    vm = Get.put(ProductDetailViewModel(), tag: widget.product.id);
-
-    /// API CALL
-    vm.loadSingleProduct(
-      widget.product.id.toString(),
-      widget.categoryId.toString(),
-      widget.adminId.toString(),
-      widget.userTypeId.toString(),
-      widget.areaId.toString(),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
+    String imageUrl =
+        "https://mrnew.medrpha.com/uploads/${product.productImg ?? "noimage.png"}";
 
-    String imageUrl = widget.product.image;
-
-    if (!imageUrl.startsWith('http')) {
-      imageUrl = "https://mrnew.medrpha.com/uploads/$imageUrl";
+    double calcDiscount = 0;
+    if ((product.mrp ?? 0) > (product.finalCompanyPrice ?? 0)) {
+      calcDiscount =
+          ((product.mrp! - product.finalCompanyPrice!) / product.mrp!) * 100;
     }
+
+    double finalDiscount = (product.discount != null && product.discount! > 0)
+        ? product.discount!
+        : calcDiscount;
 
     return Scaffold(
       backgroundColor: Colors.white,
-
-      /// APPBAR
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A5ED3),
         elevation: 0,
@@ -67,182 +41,119 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           onPressed: () => Get.back(),
         ),
         title: const Text(
-          "Product Detail",
+          "PRODUCT DETAIL",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
-
-      /// BODY
-      body: Obx(() {
-
-        if (vm.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF1A5ED3),
-            ),
-          );
-        }
-
-        final detail = vm.productData.value;
-
-        /// PRICE LOGIC
-        double displayPrice =
-        (detail?.finalCompanyPrice != null && detail!.finalCompanyPrice! > 0)
-            ? detail.finalCompanyPrice!
-            : (widget.product.price ?? 0).toDouble();
-
-        num displayMrp =
-        (detail?.mrp != null && detail!.mrp! > 0)
-            ? detail.mrp!
-            : (widget.product.mrp ?? 0). toDouble();
-
-        num displayDiscount =
-        (detail?.discountPercentage != null &&
-            detail!.discountPercentage! > 0)
-            ? detail.discountPercentage!
-            : (widget.product.discount ?? 0).toDouble();
-
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              /// PRODUCT IMAGE
-              Container(
-                height: 300,
-                width: double.infinity,
-                color: Colors.grey[100],
-                child: widget.product.image.isNotEmpty
-                    ? Image.network(
-                  imageUrl,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.image_not_supported,
-                      size: 100, color: Colors.grey),
-                )
-                    : const Icon(Icons.image_not_supported,
-                    size: 100, color: Colors.grey),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-
-                    /// PRODUCT NAME
-                    Text(
-                      (detail?.productName ?? widget.product.name)
-                          .toUpperCase(),
-                      style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1),
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    /// COMPANY
-                    Text(
-                      (detail?.companyName ?? widget.product.company)
-                          .toUpperCase(),
-                      style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    /// MRP
-                    // if (displayMrp > 0)
-                      Text(
-                        "MRP: ₹ ${displayMrp.toStringAsFixed(2)}",
-                        style: const TextStyle(
-                          decoration: TextDecoration.lineThrough,
-                          color: Colors.grey,
-                          fontSize: 16,
-                        ),
-                      ),
-
-                    const SizedBox(height: 6),
-
-                    /// PRICE + DISCOUNT
-                    Row(
-                      children: [
-                        Text(
-                          "₹ ${displayPrice.toStringAsFixed(2)}",
-                          style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black),
-                        ),
-
-                        const SizedBox(width: 12),
-
-                        // if (displayDiscount > 0)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text(
-                              "${displayDiscount.toStringAsFixed(0)}% OFF",
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.green[700],
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    /// DESCRIPTION
-                    const Text(
-                      "Description",
-                      style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Text(
-                      (detail?.description ?? widget.product.subtitle)
-                          .toString()
-                          .isEmpty
-                          ? "No description available."
-                          : (detail?.description ??
-                          widget.product.subtitle),
-                      style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[700],
-                          height: 1.5),
-                    ),
-
-                    const SizedBox(height: 100),
-                  ],
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 300,
+              width: double.infinity,
+              color: Colors.grey[100],
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.image_not_supported,
+                  size: 100,
+                  color: Colors.grey,
                 ),
               ),
-            ],
-          ),
-        );
-      }),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    (product.productName ?? "N/A").toUpperCase(),
+                    style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    (product.companyName ?? "Unknown Company").toUpperCase(),
+                    style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "MRP: ₹ ${(product.mrp ?? 0).toStringAsFixed(2)}",
+                    style: const TextStyle(
+                      decoration: TextDecoration.lineThrough,
+                      color: Colors.grey,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    children: [
+                      Text(
+                        "₹ ${(product.finalCompanyPrice ?? 0).toStringAsFixed(2)}",
+                        style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                      ),
+                      const SizedBox(width: 20),
+                      if (finalDiscount > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F5E9),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(
+                            "${finalDiscount.toStringAsFixed(0)}% OFF",
+                            style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF2E7D32),
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "Description",
+                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    product.description == null || product.description!.isEmpty
+                        ? "No description available."
+                        : product.description!,
+                    style: TextStyle(
+                        fontSize: 16, color: Colors.grey[800], height: 1.6),
+                  ),
+                  const SizedBox(height: 120),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
 
-      /// CART SECTION
+      /// BOTTOM NAVIGATION BAR WITH MANUAL QUANTITY SUPPORT
       bottomNavigationBar: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
+          String productId = product.pid.toString();
+          int quantity = cartProvider.getProductQuantity(productId);
 
-          int quantity =
-          cartProvider.getProductQuantity(widget.product.id);
+          int apiQty = int.tryParse(product.available_quantity.toString()) ?? 0;
+          int effectiveLimit = (apiQty == 0) ? 1000 : (apiQty > 1000 ? 1000 : apiQty);
 
           return Container(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
@@ -256,8 +167,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ),
             child: quantity == 0
                 ? ElevatedButton(
-              onPressed: () =>
-                  cartProvider.addToCart(widget.product),
+              onPressed: () async {
+                // Pehli baar add karne par
+                await cartProvider.addToCart(
+                    product: product, firmId: firmId, userId: userId);
+
+                // --- SAFETY CHECK ---
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Added to cart!")),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1A5ED3),
                 minimumSize: const Size(double.infinity, 55),
@@ -275,44 +196,114 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             )
                 : Container(
               height: 55,
-              width: double.infinity,
               decoration: BoxDecoration(
                 border: Border.all(
                     color: const Color(0xFF1A5ED3), width: 1.5),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Row(
-                mainAxisAlignment:
-                MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-
-                  /// REMOVE
+                  /// DECREASE BUTTON
                   IconButton(
-                    onPressed: () => cartProvider
-                        .removeFromCart(widget.product.id),
+                    onPressed: () async {
+                      await cartProvider.removeFromCart(productId,
+                          firmId: firmId, userId: userId);
+                    },
                     icon: const Icon(Icons.remove,
                         color: Color(0xFF1A5ED3), size: 28),
                   ),
 
-                  Text(
-                    "$quantity",
-                    style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold),
+                  /// MANUAL INPUT
+                  InkWell(
+                    onTap: () => _showQuantityDialog(
+                        context, cartProvider, quantity, effectiveLimit),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        "$quantity",
+                        style: const TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
 
-                  /// ADD
+                  /// INCREASE BUTTON (Yahan bhi fix kar diya hai)
                   IconButton(
-                    onPressed: () =>
-                        cartProvider.addToCart(widget.product),
-                    icon: const Icon(Icons.add,
-                        color: Color(0xFF1A5ED3), size: 28),
+                    onPressed: () async {
+                      if (quantity < effectiveLimit) {
+                        await cartProvider.addToCart(
+                            product: product,
+                            firmId: firmId,
+                            userId: userId);
+
+                        // --- SAFETY CHECK ---
+                        if (!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Quantity updated!")),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Max limit $effectiveLimit reached")),
+                        );
+                      }
+                    },
+                    icon: Icon(Icons.add,
+                        color: quantity >= effectiveLimit ? Colors.grey : const Color(0xFF1A5ED3),
+                        size: 28),
                   ),
                 ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// DIALOG FOR MANUAL QUANTITY INPUT
+  void _showQuantityDialog(
+      BuildContext context, CartProvider cart, int current, int max) {
+    final TextEditingController controller =
+    TextEditingController(text: current.toString());
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Quantity"),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: "Enter value (Max: $max)",
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () {
+              int? val = int.tryParse(controller.text);
+              if (val != null && val > 0) {
+                if (val > max) val = max;
+
+                cart.updateQuantityManually(
+                  product: product,
+                  newQty: val,
+                  firmId: firmId,
+                  userId: userId,
+                );
+              }
+              Navigator.pop(context);
+            },
+            child: const Text("Update"),
+          ),
+        ],
       ),
     );
   }

@@ -7,12 +7,23 @@ import '../AppManager/ViewModel/RegistrationVM/addfirm_vm.dart';
 import '../screens/otp_verify.dart';
 
 class AddUserController extends GetxController {
+  final TextEditingController mobileController = TextEditingController();
+  var isPhoneVerified = false.obs;
+  var phoneUpdateTrigger = 0.obs;
+
+  /// --- UPDATE PHONE LOGIC ---
+  void updatePhone(String val) {
+    if (val.isNotEmpty) {
+      phoneController.text = val;
+      isPhoneVerified.value = false;
+      phoneUpdateTrigger.value++;
+    }
+  }
 
   /// ---------------- STATES ----------------
   var currentStep = 0.obs;
   var isAgreed = false.obs;
   var isLoading = false.obs;
-  var isPhoneVerified = false.obs;
 
   final LoginOtpVM loginOtpVM = Get.put(LoginOtpVM());
   final AddFirmVM addFirmVM = Get.put(AddFirmVM());
@@ -49,6 +60,24 @@ class AddUserController extends GetxController {
   final contactNumberController = TextEditingController();
   final alternateNumberController = TextEditingController();
 
+  /// ---------------- EMAIL VALIDATION ----------------
+  bool isEmailValid() {
+    String email = emailController.text.trim();
+    Pattern pattern = r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+';
+    RegExp regex = RegExp(pattern.toString());
+
+    if (email.isEmpty) {
+      Get.snackbar("Error", "Email cannot be empty",
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return false;
+    } else if (!regex.hasMatch(email)) {
+      Get.snackbar("Error", "Please enter a valid email address",
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return false;
+    }
+    return true;
+  }
+
   /// ---------------- PHONE VERIFICATION ----------------
   Future<void> verifyPhoneNumber() async {
     String phone = phoneController.text.trim();
@@ -71,6 +100,7 @@ class AddUserController extends GetxController {
             mobileNumber: phone,
             otp: serverOtp,
           ));
+
           if (result == true) {
             isPhoneVerified.value = true;
             Get.snackbar("Verified", "Mobile number verified successfully",
@@ -105,10 +135,13 @@ class AddUserController extends GetxController {
 
   /// ---------------- NAVIGATION ----------------
   void nextStep() {
-    if (currentStep.value == 0 && !isPhoneVerified.value) {
-      Get.snackbar("Action Required", "Please verify your mobile number first",
-          backgroundColor: Colors.orange, colorText: Colors.white);
-      return;
+    if (currentStep.value == 0) {
+      if (!isPhoneVerified.value) {
+        Get.snackbar("Action Required", "Please verify your mobile number first",
+            backgroundColor: Colors.orange, colorText: Colors.white);
+        return;
+      }
+      if (!isEmailValid()) return;
     }
     if (currentStep.value < 3) currentStep.value++;
   }
@@ -119,8 +152,6 @@ class AddUserController extends GetxController {
 
   /// ---------------- SUBMIT REGISTRATION ----------------
   Future<void> submitRegistration() async {
-
-    // Validation
     if (!isAgreed.value) {
       Get.snackbar("Terms Required", "Please accept terms and conditions",
           backgroundColor: Colors.orange, colorText: Colors.white);
@@ -133,12 +164,13 @@ class AddUserController extends GetxController {
       return;
     }
 
-    isLoading.value = true;
+    if (!isEmailValid()) return;
 
+    isLoading.value = true;
     try {
       Map<String, String> fields = {
         "user_type_id": "1",
-        "firm_name": nameController.text, // Name hi firm_name hai
+        "firm_name": nameController.text,
         "gstno": gstNoController.text,
         "valid": DateTime.now().toIso8601String(),
         "phoneno": phoneController.text,
@@ -147,7 +179,7 @@ class AddUserController extends GetxController {
         "pic3": drugLicenceNoController.text,
         "address": addressController.text,
         "register_date": DateTime.now().toIso8601String(),
-        "pay_late_status": "1",
+        "pay_late_status": "0",
         "txtemail": emailController.text,
         "txtpostalcode": pinCodeController.text,
         "txtdlno": drugLicenceNoController.text,
@@ -156,9 +188,9 @@ class AddUserController extends GetxController {
         "countryid": "1",
         "stateid": "1",
         "cityid": "1",
-        "Regionalid": "1",
+        "Regionalid": "0",
         "Areaid": "1",
-        "Status": "1",
+        "Status": "0",
         "txtdlname": drugLicenceNameController.text,
         "fssaiNo": fssaiNoController.text,
         "PersonName": contactPersonNameController.text,
@@ -170,9 +202,9 @@ class AddUserController extends GetxController {
         "mrid": "1",
         "hftermsandconditions": isAgreed.value ? "1" : "0",
         "firmpassword": passwordController.text,
-        "app_status": "1",
-        "salepid": "1",
-        "SalesexecutiveId": "1",
+        "app_status": "0",
+        "salepid": "0",
+        "SalesexecutiveId": "0",
       };
 
       bool success = await addFirmVM.addFirm(
@@ -185,10 +217,8 @@ class AddUserController extends GetxController {
       if (success) {
         Get.snackbar("Success", "Registration Completed Successfully!",
             backgroundColor: Colors.green, colorText: Colors.white);
-
         Get.offAll(() => HomeScreen());
       }
-
     } catch (e) {
       Get.snackbar("Error", "Registration Failed", backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
@@ -196,7 +226,6 @@ class AddUserController extends GetxController {
     }
   }
 
-  /// ---------------- DISPOSE ----------------
   @override
   void onClose() {
     nameController.dispose();

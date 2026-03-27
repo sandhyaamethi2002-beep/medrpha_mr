@@ -24,49 +24,50 @@ class PersonalStep extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Expanded(
               flex: 2,
               child: Obx(() {
-                bool isVerified = controller.isPhoneVerified.value;
+                // Dependency trigger for reactivity
+                String _ = controller.isPhoneVerified.value.toString() + controller.phoneController.text;
 
                 return customInputField(
                   label: "Phone No. *",
                   ctr: controller.phoneController,
                   icon: CupertinoIcons.phone,
                   keyboardType: TextInputType.phone,
-
-                  enable: !isVerified,
-
+                  // Verified hone par edit disable ho jayega
+                  enable: !controller.isPhoneVerified.value,
                 );
               }),
             ),
 
             const SizedBox(width: 10),
 
-            // Verify Button
+            // Verify Button (Original Style)
             Obx(() {
               bool isVerified = controller.isPhoneVerified.value;
+              bool isLoading = controller.isLoading.value;
 
               return SizedBox(
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: isVerified
+                  onPressed: (isVerified || isLoading)
                       ? null
                       : () => controller.verifyPhoneNumber(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isVerified
                         ? Colors.green
                         : const Color(0xFF1A5ED3),
-                    disabledBackgroundColor: Colors.green,
+                    disabledBackgroundColor: isVerified ? Colors.green : Colors.grey.shade400,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     elevation: 0,
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
-                  child: Text(
+                  child: isLoading
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : Text(
                     isVerified ? "VERIFIED" : "VERIFY",
                     style: const TextStyle(
                       color: Colors.white,
@@ -84,7 +85,7 @@ class PersonalStep extends StatelessWidget {
         const Divider(),
         const SizedBox(height: 15),
 
-        // Remaining Fields (LOCKED UNTIL VERIFIED)
+        // Remaining Fields (LOCKED UNTIL VERIFIED - Original Style)
         Obx(() {
           bool isVerified = controller.isPhoneVerified.value;
 
@@ -99,12 +100,14 @@ class PersonalStep extends StatelessWidget {
                     ctr: controller.nameController,
                     icon: CupertinoIcons.person,
                   ),
+                  const SizedBox(height: 10), // Gap maintain karne ke liye
                   customInputField(
                     label: "Email *",
                     ctr: controller.emailController,
                     icon: CupertinoIcons.mail,
                     keyboardType: TextInputType.emailAddress,
                   ),
+                  const SizedBox(height: 10),
                   customInputField(
                     label: "Password *",
                     ctr: controller.passwordController,

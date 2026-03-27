@@ -1,80 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-class InitialUserModel {
-  final String phone;
-  bool isCompleted;
-
-  InitialUserModel({
-    required this.phone,
-    this.isCompleted = false,
-  });
-}
+import 'package:get_storage/get_storage.dart'; // Ensure this is imported
+import '../AppManager/Models/InitialUserM/GetInitialRegistrationsByMrId_model.dart';
+import '../AppManager/ViewModel/InitialUserVM/GetInitialRegistrationsByMrId_vm.dart';
+import '../AppManager/ViewModel/InitialUserVM/SaveInitialUser_vm.dart';
 
 class InitialUserController extends GetxController {
+  // We no longer require mrId in the constructor.
+  // It will pull dynamically from storage.
+  InitialUserController();
+
   final TextEditingController searchController = TextEditingController();
+  final box = GetStorage();
 
-  // Master list (Reactive)
-  final RxList<InitialUserModel> _allUsers = <InitialUserModel>[
-    InitialUserModel(phone: "123-456-7890"),
-    InitialUserModel(phone: "098-765-4321"),
-    InitialUserModel(phone: "555-555-5555"),
-    InitialUserModel(phone: "111-222-3333"),
-    InitialUserModel(phone: "987-654-3210"),
-    InitialUserModel(phone: "123-123-1234"),
-    InitialUserModel(phone: "456-789-0123"),
-    InitialUserModel(phone: "888-999-0000"),
-    InitialUserModel(phone: "222-333-4444"),
-    InitialUserModel(phone: "666-777-8888"),
-    InitialUserModel(phone: "333-444-5555"),
-    InitialUserModel(phone: "777-888-9999"),
-    InitialUserModel(phone: "444-555-6666"),
-    InitialUserModel(phone: "888-999-1111"),
-    InitialUserModel(phone: "555-666-7777"),
-  ].obs;
+  // ViewModels
+  final GetInitialRegistrationsByMrIdVM vm = Get.put(GetInitialRegistrationsByMrIdVM());
+  final SaveInitialUserVM saveVm = Get.put(SaveInitialUserVM());
 
-  // Filtered list (UI me show hoga)
-  final RxList<InitialUserModel> filteredUsers =
-      <InitialUserModel>[].obs;
+  // Observables
+  RxList<UserData> filteredUsers = <UserData>[].obs;
+
+  /// Helper to get the current MR ID from storage
+  int get currentMrId => box.read('mr_id') ?? 0;
 
   @override
   void onInit() {
     super.onInit();
 
-    // Initially show all users
-    filteredUsers.assignAll(_allUsers);
+    // Initial fetch
+    fetchUsers();
 
-    // Add listener for search
     searchController.addListener(_filterUsers);
+
+    // Listen for new user addition from the Send Link Dialog
+    ever(saveVm.newUser, (UserData? user) {
+      if (user != null) {
+        // Add to the local list immediately so the UI updates
+        vm.users.insert(0, user);
+        _filterUsers();
+      }
+    });
   }
 
+  /// Fetch users using the ID from GetStorage
+  void fetchUsers() async {
+    if (currentMrId == 0) {
+      debugPrint("Warning: mr_id is 0. Ensure user is logged in.");
+    }
+
+    await vm.fetchUsers(currentMrId);
+    filteredUsers.assignAll(vm.users);
+  }
+
+  /// Search filter logic
   void _filterUsers() {
     String query = searchController.text.toLowerCase();
 
     if (query.isEmpty) {
-      filteredUsers.assignAll(_allUsers);
+      filteredUsers.assignAll(vm.users);
     } else {
       filteredUsers.assignAll(
-        _allUsers.where(
-              (user) => user.phone.toLowerCase().contains(query),
+        vm.users.where(
+              (user) => (user.phoneno ?? "").toLowerCase().contains(query),
         ),
       );
     }
   }
 
-  void completeRegistration(InitialUserModel user) {
-    user.isCompleted = true;
-
-    // Refresh main list so UI updates
-    _allUsers.refresh();
-
-    // Re-apply filter
+  /// Mark registration complete locally
+  void completeRegistration(UserData user) {
+    user.completeRegStatus = 1;
+    vm.users.refresh();
     _filterUsers();
   }
 
   @override
   void onClose() {
-    searchController.removeListener(_filterUsers);
     searchController.dispose();
     super.onClose();
   }

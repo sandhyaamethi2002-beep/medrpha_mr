@@ -1,63 +1,43 @@
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import '../../Models/CategoryM/getByCategoryId_model.dart';
 import '../../Services/CategoryS/getByCategoryId_service.dart';
 
-class GetByCategoryIdVM extends GetxController {
+class GetByCategoryVM extends ChangeNotifier {
 
-  /// LOADING
-  var isLoading = false.obs;
+  final GetByCategoryService _service = GetByCategoryService();
 
-  /// PRODUCT LISTS
-  var productList = <ProductData>[].obs;
-  var filteredList = <ProductData>[].obs;
+  bool isLoading = false;
 
-  /// ⭐ SELECTED CATEGORY
-  var selectedCategoryId = "".obs;
-  var selectedCategoryName = "All".obs;
+  List<ProductData> productList = [];
+  List<ProductData> _allProducts = [];
 
-  final GetByCategoryIdService service = GetByCategoryIdService();
+  Future<void> fetchProducts() async {
 
-  /// --- FETCH PRODUCTS ---
-  Future<void> fetchProducts(
-      String categoryId, {
-        String categoryName = "All",
-      }) async {
+    isLoading = true;
+    notifyListeners();
 
-    try {
-      isLoading.value = true;
+    final response = await _service.getProductsByCategory();
 
-      /// CATEGORY UPDATE
-      selectedCategoryId.value = categoryId;
-      selectedCategoryName.value = categoryName;
-
-      final response = await service.getProductsByCategory(categoryId);
-
-      if (response != null && response.success == true) {
-        productList.assignAll(response.data ?? []);
-        filteredList.assignAll(response.data ?? []);
-      } else {
-        productList.clear();
-        filteredList.clear();
-      }
-
-    } catch (e) {
-      print("VM ERROR : $e");
-    } finally {
-      isLoading.value = false;
+    if (response != null && response.success == true) {
+      productList = response.data ?? [];
+      _allProducts = productList;
     }
+
+    isLoading = false;
+    notifyListeners();
   }
 
-  /// --- SEARCH LOGIC ---
   void searchProduct(String query) {
-    if (query.isEmpty) {
-      filteredList.assignAll(productList);
-    } else {
-      var results = productList.where((product) {
-        final productName = product.productName?.toLowerCase() ?? "";
-        return productName.contains(query.toLowerCase());
-      }).toList();
 
-      filteredList.assignAll(results);
+    if (query.isEmpty) {
+      productList = _allProducts;
+    } else {
+      productList = _allProducts.where((p) =>
+          (p.productName ?? "")
+              .toLowerCase()
+              .contains(query.toLowerCase())).toList();
     }
+
+    notifyListeners();
   }
 }

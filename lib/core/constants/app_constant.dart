@@ -9,6 +9,7 @@ class ApiConstants {
 
   //Account APIs
   static const String login = "$baseUrl/AuthApi/login";
+  // static const String send-login-otp = "$baseUrl/AuthApi/send-login-otp";
 
 
   // Attendance

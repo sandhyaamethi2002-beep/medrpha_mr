@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../AppManager/ViewModel/ProfileVM/get_mr_by_id_vm.dart';
 import '../styles/color_styles.dart';
 import '../styles/text_styles.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_info_card.dart';
-import '../controllers/profile_controller.dart';
 
 class ProfileDetailScreen extends StatelessWidget {
-  ProfileDetailScreen({super.key});
+  final int mrId;
 
-  final ProfileController controller = Get.put(ProfileController());
+  ProfileDetailScreen({super.key, required this.mrId});
+
+  final controller = Get.put(GetMrByIdController());
 
   @override
   Widget build(BuildContext context) {
+
+    // API call
+    controller.fetchMr(mrId);
+
     return Scaffold(
-      backgroundColor: primaryColor, // 1. Set background color
+      backgroundColor: primaryColor,
       appBar: AppBar(
         backgroundColor: primaryColor,
         iconTheme: const IconThemeData(color: whiteColor),
@@ -37,11 +43,21 @@ class ProfileDetailScreen extends StatelessWidget {
         ),
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(25.0),
-          child: Obx(
-            () => Column(
+          child: Obx(() {
+            if (controller.isLoading.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            final data = controller.mrData.value;
+
+            if (data == null) {
+              return const Center(child: Text("No Data Found"));
+            }
+
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ⭐ Profile Header
+                // Header
                 Container(
                   width: double.infinity,
                   height: 150,
@@ -61,36 +77,42 @@ class ProfileDetailScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 10.0),
                     child: ProfileHeader(
-                      name: controller.name.value,
-                      role: controller.role.value,
+                      name: data.mrNm ?? "",
+                      role: "MR",
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 30),
 
-                // ⭐ User Info Cards
                 ProfileInfoCard(
                   label: "MR Id",
-                  value: controller.mrId.value,
-                ),
-                const SizedBox(height: 20),
-                ProfileInfoCard(
-                  label: "Designation",
-                  value: controller.designation.value,
-                ),
-                const SizedBox(height: 20),
-                ProfileInfoCard(label: "Phone", value: controller.phone.value),
-                const SizedBox(height: 20),
-                ProfileInfoCard(
-                  label: "Address",
-                  value: controller.address.value,
+                  value: data.mrid.toString(),
                 ),
 
                 const SizedBox(height: 20),
+
+                ProfileInfoCard(
+                  label: "Phone",
+                  value: data.mrmobile ?? "",
+                ),
+
+                const SizedBox(height: 20),
+
+                ProfileInfoCard(
+                  label: "Designation",
+                  value:  (data.hdnDes_id == 2 ) ? 'Executive' : 'Team-Leader',
+                ),
+
+                const SizedBox(height: 20),
+
+                ProfileInfoCard(
+                  label: "Address",
+                  value: data.mrAddress ?? "",
+                ),
               ],
-            ),
-          ),
+            );
+          }),
         ),
       ),
     );

@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import '../AppManager/ViewModel/CategoryVM/getByCategoryId_vm.dart';
 
 class ProductModel {
   final String id;
@@ -13,8 +12,6 @@ class ProductModel {
   final double? price;
   final double? discount;
 
-
-
   ProductModel({
     required this.id,
     required this.name,
@@ -27,72 +24,72 @@ class ProductModel {
     this.price,
     this.discount,
   });
-
-
 }
 
 class ProductController extends GetxController {
-  // Get.find ki jagah Get.put use karein agar error aa raha hai
-  // Ya phir ensure karein ki VM pehle initialize ho chuka ho
-  final GetByCategoryIdVM apiVM = Get.put(GetByCategoryIdVM());
+  // Original List (Mock Data)
+  var allProducts = <ProductModel>[].obs;
 
+  // List jo UI pe dikhegi (Filtered)
   var filteredProducts = <ProductModel>[].obs;
+
   var searchQuery = "".obs;
+  var isLoading = false.obs;
 
-  /// LOAD PRODUCTS BY CATEGORY
-  Future<void> loadProductsByCategory(String categoryId) async {
-    await apiVM.fetchProducts(categoryId);
-    _mapApiToUi();
+  @override
+  void onInit() {
+    super.onInit();
+    loadDummyProducts(); // Initial data load
   }
 
-  /// Helper to convert API Data to UI Model
-  void _mapApiToUi() {
-    final products = apiVM.productList.map((e) {
-      return ProductModel(
-        id: e.pid.toString(),
-        name: e.productName ?? "",
-        subtitle: e.description ?? "",
-        company: e.companyName ?? "Unknown",
-        image: e.productImg ?? "",
-        categoryId: e.categoryName ?? "",
-        type: e.productType ?? "",
-        // VM ke ProductData se fields utha rahe hain
-        mrp: e.mrp?.toDouble() ?? 0.0,
-        price: e.finalCompanyPrice?.toDouble() ?? 0.0,
-        discount: e.discountPercentage?.toDouble() ?? 0.0,
-      );
-    }).toList();
+  /// DUMMY DATA LOAD (API ki jagah)
+  void loadDummyProducts() {
+    isLoading.value = true;
 
-    filteredProducts.assignAll(products);
+    // Fake delay taaki loading effect dikhe
+    Future.delayed(const Duration(seconds: 1), () {
+      var dummyData = List.generate(10, (index) => ProductModel(
+        id: index.toString(),
+        name: "Medicine Name $index",
+        subtitle: "Composition details here",
+        company: "Pharma Co $index",
+        image: "https://via.placeholder.com/150",
+        categoryId: "Category $index",
+        type: "Tablet",
+        mrp: 500.0,
+        price: 450.0,
+        discount: 10.0,
+      ));
+
+      allProducts.assignAll(dummyData);
+      filteredProducts.assignAll(dummyData);
+      isLoading.value = false;
+    });
   }
 
-  /// SEARCH PRODUCT
+  /// SEARCH PRODUCT LOGIC
   void searchProduct(String query) {
     searchQuery.value = query;
 
     if (query.isEmpty) {
-      _mapApiToUi();
-      return;
+      filteredProducts.assignAll(allProducts);
+    } else {
+      var results = allProducts.where((product) {
+        return product.name.toLowerCase().contains(query.toLowerCase()) ||
+            product.company.toLowerCase().contains(query.toLowerCase());
+      }).toList();
+
+      filteredProducts.assignAll(results);
     }
+  }
 
-    var results = apiVM.productList.where((product) {
-      final name = product.productName ?? "";
-      return name.toLowerCase().contains(query.toLowerCase());
-    }).map((e) {
-      return ProductModel(
-        id: e.pid.toString(),
-        name: e.productName ?? "",
-        subtitle: e.description ?? "",
-        company: e.companyName ?? "Unknown",
-        image: e.productImg ?? "",
-        categoryId: e.categoryName ?? "",
-        type: e.productType ?? "",
-        mrp: e.mrp,
-        price: e.finalCompanyPrice,
-        discount: e.discountPercentage,
-      );
-    }).toList();
-
-    filteredProducts.assignAll(results);
+  /// CATEGORY FILTER (UI ONLY)
+  void filterByCategory(String categoryId) {
+    if (categoryId == "All") {
+      filteredProducts.assignAll(allProducts);
+    } else {
+      var results = allProducts.where((p) => p.categoryId == categoryId).toList();
+      filteredProducts.assignAll(results);
+    }
   }
 }

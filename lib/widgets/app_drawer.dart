@@ -1,6 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:provider/provider.dart';
+import '../AppManager/ViewModel/ProfileVM/get_mr_by_id_vm.dart';
+import '../AppManager/ViewModel/RegistrationVM/get_firm_by_mrid_vm.dart';
 import '../controllers/drawer_menu_controller.dart';
 import '../screens/initial_user_screen.dart';
 import '../screens/manage_user_screen.dart';
@@ -12,49 +16,71 @@ import 'logout_button.dart';
 class AppDrawer extends StatelessWidget {
   AppDrawer({super.key});
 
-
   final DrawerMenuController menuController = Get.put(DrawerMenuController());
+
+  final GetMrByIdController mrController = Get.put(GetMrByIdController());
+
+  final box = GetStorage();
+
+  int get mrId => box.read('mr_id') ?? 0;
 
   @override
   Widget build(BuildContext context) {
+    if (mrController.mrData.value == null) {
+      mrController.fetchMr(mrId);
+    }
+
     return Drawer(
       child: Column(
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            decoration: const BoxDecoration(
-              color: primaryColor,
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 30),
-                CircleAvatar(
-                  radius: 38,
-                  backgroundColor: whiteColor,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(36),
-                    child: Image.asset(
-                      "assets/images/logo.png",
-                      width: 72,
-                      height: 72,
-                      fit: BoxFit.cover,
+          Obx(() {
+            final userData = mrController.mrData.value;
+
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              decoration: const BoxDecoration(
+                color: primaryColor,
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 30),
+                  CircleAvatar(
+                    radius: 38,
+                    backgroundColor: whiteColor,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(36),
+                      child: Image.asset(
+                        "assets/images/logo.png",
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  "User Name",
-                  style: titleStyle.copyWith(fontSize: 18, color: whiteColor),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "user.name@example.com",
-                  style: bodyStyle.copyWith(fontSize: 14, color: white70),
-                ),
-              ],
-            ),
-          ),
+                  const SizedBox(height: 15),
+
+                  // Dynamic User Name (Using mrNm)
+                  Text(
+                    mrController.isLoading.value
+                        ? "Loading..."
+                        : (userData?.mrNm ?? "User Name"),
+                    style: titleStyle.copyWith(fontSize: 18, color: whiteColor),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // Dynamic Email (Using mremail)
+                  Text(
+                    mrController.isLoading.value
+                        ? "Please wait..."
+                        : (userData?.mremail ?? "user.name@example.com"),
+                    style: bodyStyle.copyWith(fontSize: 16, color: white70),
+                  ),
+                ],
+              ),
+            );
+          }),
 
           // Menu Items
           Expanded(
@@ -70,19 +96,19 @@ class AppDrawer extends StatelessWidget {
                 ),
 
                 Obx(() => ListTile(
-                      leading: const Icon(CupertinoIcons.person_2_alt, color: blackColor),
-                      title: Text("MR", style: buttonTextStyle),
-                      trailing: Icon(
-                        menuController.mrExpanded.value
-                            ? CupertinoIcons.chevron_down
-                            : CupertinoIcons.chevron_right,
-                        size: 20,
-                        color: blackColor,
-                      ),
-                      onTap: () {
-                        menuController.toggleMR();
-                      },
-                    )),
+                  leading: const Icon(CupertinoIcons.person_2_alt, color: blackColor),
+                  title: Text("MR", style: buttonTextStyle),
+                  trailing: Icon(
+                    menuController.mrExpanded.value
+                        ? CupertinoIcons.chevron_down
+                        : CupertinoIcons.chevron_right,
+                    size: 20,
+                    color: blackColor,
+                  ),
+                  onTap: () {
+                    menuController.toggleMR();
+                  },
+                )),
 
                 Obx(() {
                   if (!menuController.mrExpanded.value) {
@@ -98,7 +124,7 @@ class AppDrawer extends StatelessWidget {
                           title: Text("View Profile", style: bodyStyle.copyWith(fontSize: 15)),
                           onTap: () {
                             Get.back();
-                            Get.to(() => ProfileDetailScreen());
+                            Get.to(() => ProfileDetailScreen(mrId: mrId));
                           },
                         ),
                         ListTile(
@@ -107,16 +133,28 @@ class AppDrawer extends StatelessWidget {
                           title: Text("Initial User", style: bodyStyle.copyWith(fontSize: 15)),
                           onTap: () {
                             Get.back();
-                            Get.to(() => InitialUserScreen());
+                            Get.to(() => InitialUserScreen(mrId: mrId));
                           },
                         ),
                         ListTile(
                           dense: true,
-                          leading: const Icon(CupertinoIcons.person_crop_circle_badge_plus, size: 22, color: greyColor),
-                          title: Text("Manage User", style: bodyStyle.copyWith(fontSize: 15)),
+                          leading: const Icon(
+                            CupertinoIcons.person_crop_circle_badge_plus,
+                            size: 22,
+                            color: greyColor,
+                          ),
+                          title: Text(
+                            "Manage User",
+                            style: bodyStyle.copyWith(fontSize: 15),
+                          ),
                           onTap: () {
                             Get.back();
-                            Get.to(() => VerifiedUserScreen());
+                            Get.to(
+                                  () => ChangeNotifierProvider(
+                                create: (_) => GetFirmByMridVM(),
+                                child: VerifiedUserScreen(mrId: mrId),
+                              ),
+                            );
                           },
                         ),
                       ],

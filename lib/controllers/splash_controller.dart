@@ -1,23 +1,26 @@
+import 'dart:async';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_storage/get_storage.dart';
 
 class SplashController extends GetxController {
+
   @override
-  void onReady() {
-    super.onReady();
+  void onInit() {
+    super.onInit();
     _checkLoginStatus();
   }
 
-  void _checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bool? isLoggedIn = prefs.getBool('isLoggedIn');
+  void _checkLoginStatus() {
+    final box = GetStorage();
 
-    await Future.delayed(const Duration(seconds: 3));
+    bool isLoggedIn = box.read('isLoggedIn') ?? false;
 
-    if (isLoggedIn == true) {
-      Get.offAllNamed('/home');
-    } else {
-      Get.offAllNamed('/login');
-    }
+    Timer(const Duration(seconds: 3), () {
+      if (isLoggedIn) {
+        Get.offAllNamed('/home');
+      } else {
+        Get.offAllNamed('/login');
+      }
+    });
   }
 }
